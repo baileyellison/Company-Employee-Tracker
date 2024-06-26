@@ -1,5 +1,21 @@
 const inquirer = require('inquirer');
-const { viewDepartments, viewRoles, viewEmployees, addDepartment, addRole, addEmployee, updateEmployeeRole, updateEmployeeManager, viewEmployeesByManager, viewEmployeesByDepartment, deleteDepartment, deleteRole, deleteEmployee, calculateDepartmentBudget } = require('./db/queries');
+const connection = require('./db/connection'); // Ensure you import your MySQL connection instance
+const { 
+    viewDepartments, 
+    viewRoles, 
+    viewEmployees, 
+    addDepartment, 
+    addRole, 
+    addEmployee, 
+    updateEmployeeRole, 
+    updateEmployeeManager, 
+    viewEmployeesByManager, 
+    viewEmployeesByDepartment, 
+    deleteDepartment, 
+    deleteRole, 
+    deleteEmployee, 
+    calculateDepartmentBudget 
+} = require('./db/queries');
 
 function startApp() {
     // Display initial prompt to the user
@@ -29,28 +45,150 @@ function startApp() {
     ]).then(answer => {
         switch (answer.action) {
             case 'View all departments':
-                viewDepartments().then(startApp);
+                viewDepartments().then(() => startApp());
                 break;
             case 'View all roles':
-                viewRoles().then(startApp);
+                viewRoles().then(() => startApp());
                 break;
             case 'View all employees':
-                viewEmployees().then(startApp);
+                viewEmployees().then(() => startApp());
                 break;
             case 'Add a department':
-                addDepartment().then(startApp);
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'name',
+                        message: 'Enter the name of the department:'
+                    }
+                ]).then(answer => {
+                    addDepartment({ name: answer.name }).then(() => {
+                        console.log(`Added department ${answer.name}`);
+                        startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
+                    });
+                });
                 break;
             case 'Add a role':
-                addRole().then(startApp);
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'title',
+                        message: 'Enter the title of the role:'
+                    },
+                    {
+                        type: 'input',
+                        name: 'salary',
+                        message: 'Enter the salary for this role:',
+                        validate: function(value) {
+                            var valid = !isNaN(parseFloat(value));
+                            return valid || 'Please enter a number';
+                        },
+                        filter: Number
+                    },
+                    {
+                        type: 'input',
+                        name: 'department_id',
+                        message: 'Enter the department ID for this role:',
+                        validate: function(value) {
+                            var valid = !isNaN(parseFloat(value));
+                            return valid || 'Please enter a number';
+                        },
+                        filter: Number
+                    }
+                ]).then(answers => {
+                    addRole({
+                        title: answers.title,
+                        salary: answers.salary,
+                        department_id: answers.department_id
+                    }).then(() => {
+                        console.log(`Added role ${answers.title}`);
+                        startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
+                    });
+                });
                 break;
             case 'Add an employee':
-                addEmployee().then(startApp);
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'first_name',
+                        message: 'Enter the first name of the employee:'
+                    },
+                    {
+                        type: 'input',
+                        name: 'last_name',
+                        message: 'Enter the last name of the employee:'
+                    },
+                    {
+                        type: 'input',
+                        name: 'role_id',
+                        message: 'Enter the role ID for this employee:',
+                        validate: function(value) {
+                            var valid = !isNaN(parseFloat(value));
+                            return valid || 'Please enter a number';
+                        },
+                        filter: Number
+                    },
+                    {
+                        type: 'input',
+                        name: 'manager_id',
+                        message: 'Enter the manager ID for this employee (optional - leave blank if none):',
+                        filter: function(value) {
+                            return value.trim() === '' ? null : Number(value); // Convert to null if empty
+                        }
+                    }
+                ]).then(answers => {
+                    addEmployee({
+                        first_name: answers.first_name,
+                        last_name: answers.last_name,
+                        role_id: answers.role_id,
+                        manager_id: answers.manager_id
+                    }).then(() => {
+                        console.log(`Added employee ${answers.first_name} ${answers.last_name}`);
+                        startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
+                    });
+                });
                 break;
             case 'Update an employee role':
-                updateEmployeeRole().then(startApp);
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'employeeId',
+                        message: 'Enter the ID of the employee you want to update:',
+                        validate: function(value) {
+                            var valid = !isNaN(parseFloat(value));
+                            return valid || 'Please enter a number';
+                        },
+                        filter: Number
+                    },
+                    {
+                        type: 'input',
+                        name: 'roleId',
+                        message: 'Enter the ID of the new role:',
+                        validate: function(value) {
+                            var valid = !isNaN(parseFloat(value));
+                            return valid || 'Please enter a number';
+                        },
+                        filter: Number
+                    }
+                ]).then(answers => {
+                    updateEmployeeRole(answers.employeeId, answers.roleId).then(() => {
+                        console.log(`Updated role for employee ${answers.employeeId}`);
+                        startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
+                    });
+                });
                 break;
             case 'Update an employee manager':
-                // Prompt for employee ID and new manager ID
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -76,11 +214,13 @@ function startApp() {
                     updateEmployeeManager(answers.employeeId, answers.managerId).then(() => {
                         console.log(`Updated manager for employee ${answers.employeeId}`);
                         startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
                     });
                 });
                 break;
             case 'View employees by manager':
-                // Prompt for manager ID
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -93,11 +233,10 @@ function startApp() {
                         filter: Number
                     }
                 ]).then(answer => {
-                    viewEmployeesByManager(answer.managerId).then(startApp);
+                    viewEmployeesByManager(answer.managerId).then(() => startApp());
                 });
                 break;
             case 'View employees by department':
-                // Prompt for department ID
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -110,11 +249,10 @@ function startApp() {
                         filter: Number
                     }
                 ]).then(answer => {
-                    viewEmployeesByDepartment(answer.departmentId).then(startApp);
+                    viewEmployeesByDepartment(answer.departmentId).then(() => startApp());
                 });
                 break;
             case 'Delete a department':
-                // Prompt for department ID to delete
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -130,11 +268,13 @@ function startApp() {
                     deleteDepartment(answer.departmentId).then(() => {
                         console.log(`Deleted department with ID ${answer.departmentId}`);
                         startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
                     });
                 });
                 break;
             case 'Delete a role':
-                // Prompt for role ID to delete
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -150,11 +290,13 @@ function startApp() {
                     deleteRole(answer.roleId).then(() => {
                         console.log(`Deleted role with ID ${answer.roleId}`);
                         startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
                     });
                 });
                 break;
             case 'Delete an employee':
-                // Prompt for employee ID to delete
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -170,11 +312,13 @@ function startApp() {
                     deleteEmployee(answer.employeeId).then(() => {
                         console.log(`Deleted employee with ID ${answer.employeeId}`);
                         startApp();
+                    }).catch(err => {
+                        console.log(err);
+                        startApp();
                     });
                 });
                 break;
             case 'Calculate department budget':
-                // Prompt for department ID to calculate budget
                 inquirer.prompt([
                     {
                         type: 'input',
@@ -187,14 +331,21 @@ function startApp() {
                         filter: Number
                     }
                 ]).then(answer => {
-                    calculateDepartmentBudget(answer.departmentId).then(startApp);
+                    calculateDepartmentBudget(answer.departmentId).then(() => startApp());
                 });
                 break;
             case 'Exit':
                 console.log('Exiting application...');
-                connection.end();
+                connection.end(); // Ensure the MySQL connection is closed properly
+                break;
+            default:
+                console.log('Invalid action');
+                startApp();
                 break;
         }
+    }).catch(err => {
+        console.log(err);
+        startApp();
     });
 }
 

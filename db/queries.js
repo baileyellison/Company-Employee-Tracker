@@ -1,10 +1,58 @@
 const connection = require('./connection');
 
+// View all departments
+function viewDepartments() {
+    return connection.execute('SELECT * FROM department').then(([rows, fields]) => {
+        console.table(rows);
+        // Do not call startApp() here as it's intended to be called from index.js
+    });
+}
+
+// Add a department
+function addDepartment(department) {
+    return connection.execute(
+        'INSERT INTO department (name) VALUES (?)',
+        [department.name]
+    );
+}
+
 // Update employee manager
 function updateEmployeeManager(employeeId, managerId) {
     return connection.execute(
         'UPDATE employee SET manager_id = ? WHERE id = ?',
         [managerId, employeeId]
+    );
+}
+
+// View all employees
+function viewEmployees() {
+    return connection.execute('SELECT * FROM employee').then(([rows, fields]) => {
+        console.table(rows);
+        return rows; // Optionally, you can return rows if needed elsewhere
+    });
+}
+
+// Add a role
+function addRole(role) {
+    return connection.execute(
+        'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
+        [role.title, role.salary, role.department_id]
+    );
+}
+
+// Add an employee
+function addEmployee(employee) {
+    return connection.execute(
+        'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)',
+        [employee.first_name, employee.last_name, employee.role_id, employee.manager_id]
+    );
+}
+
+// Update an employee role
+function updateEmployeeRole(employeeId, roleId) {
+    return connection.execute(
+        'UPDATE employee SET role_id = ? WHERE id = ?',
+        [roleId, employeeId]
     );
 }
 
@@ -31,6 +79,14 @@ function viewEmployeesByDepartment(departmentId) {
     ).then(([rows, fields]) => {
         console.table(rows);
         // Do not call startApp() here as it's intended to be called from index.js
+    });
+}
+
+// View all roles
+function viewRoles() {
+    return connection.execute('SELECT * FROM role').then(([rows, fields]) => {
+        console.table(rows);
+        return rows; // Optionally, you can return rows if needed elsewhere
     });
 }
 
@@ -73,9 +129,16 @@ function calculateDepartmentBudget(departmentId) {
 }
 
 module.exports = {
+    viewDepartments,
+    addDepartment,
     updateEmployeeManager,
+    viewEmployees,
     viewEmployeesByManager,
     viewEmployeesByDepartment,
+    viewRoles,
+    addRole,
+    addEmployee,
+    updateEmployeeRole,
     deleteDepartment,
     deleteRole,
     deleteEmployee,
