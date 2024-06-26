@@ -1,4 +1,5 @@
 const mysql = require('mysql2');
+
 require('dotenv').config(); // for loading MySQL credentials from .env file
 
 const connection = mysql.createConnection({
