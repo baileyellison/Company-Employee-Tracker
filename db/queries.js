@@ -4,7 +4,6 @@ const connection = require('./connection');
 function viewDepartments() {
     return connection.execute('SELECT * FROM department').then(([rows, fields]) => {
         console.table(rows);
-        // Do not call startApp() here as it's intended to be called from index.js
     });
 }
 
@@ -28,7 +27,7 @@ function updateEmployeeManager(employeeId, managerId) {
 function viewEmployees() {
     return connection.execute('SELECT * FROM employee').then(([rows, fields]) => {
         console.table(rows);
-        return rows; // Optionally, you can return rows if needed elsewhere
+        return rows; // Can return rows if needed elsewhere
     });
 }
 

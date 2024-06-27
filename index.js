@@ -1,5 +1,5 @@
 const inquirer = require('inquirer');
-const connection = require('./db/connection'); // Ensure you import your MySQL connection instance
+const connection = require('./db/connection'); 
 const { 
     viewDepartments, 
     viewRoles, 
