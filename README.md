@@ -1,4 +1,4 @@
-# Professional README.md Generator
+# mySQL Company Employee Tracker
 
 ## Description
 This CLI project allows the user to create a professional Employee Tracker. The project requires the package inquirer and Node.js along with mySQL for the application to run successfully. When the user accesses the project through the CLI, has both Node.js installed and requires inquirer the user can enter the command "npm start" into the terminal which will move the user through a series of prompts and guide the user into viewing, editing and maintaining an employee tracker. The database includes roles, departments and employee information and is contingent upon ID's for all.
